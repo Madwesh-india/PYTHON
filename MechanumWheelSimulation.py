@@ -1,14 +1,19 @@
 import numpy as np
 import pyglet
 from pyglet.window import Window
+from pyglet import shapes, gl
 
 # Configuration
 
-roonWidth = 10 #meter
-roonHeight = 10 #meter
+#Smaller size of the screen is considered to be 
+room = 100. #meter
 
-windowWidth = 500 #px
-windowHeight = 500 #px
+# obtained/updated from the window
+roomWidth = 0. #meter
+roomHeight = 0. #meter
+
+windowWidth = 0. #px
+windowHeight = 0. #px
 
 """
 The width of the bot is measured between center of the wheels
@@ -21,7 +26,7 @@ botMaxRotationalSpeed = 0.1047198*370 #rad/sec <- 0.1047198*RPM
 
 
 class Bot:
-    def __init__(self, W, H, Radius, MaxRad_S, InitialX=0, InitialY=0, InitialAng=0):
+    def __init__(self, W, H, Radius, MaxRad_S, InitialX=0., InitialY=0., InitialAng=0.):
         self.W = W
         self.H = H
         self.Radius = Radius
@@ -33,9 +38,14 @@ class Bot:
         self.x = InitialX
         self.y = InitialY
         self.theta = InitialAng
+
+        self.W1 = 0.
+        self.W2 = 0.
+        self.W3 = 0.
+        self.W4 = 0.
         
-        self.BotVel_bot_coordinate = 0
-        self.BotVel_global_coordinate = 0
+        self.BotVel_bot_coordinate = 0.
+        self.BotVel_global_coordinate = 0.
         
         self.forwardKinamatics = np.array([
             [1, 1, 1, 1],
@@ -56,6 +66,15 @@ class Bot:
             [0, 0, 1]
         ])
     
+    def draw(self, batch):
+        x, y = toCenter(self.x, self.y)
+        w, h = room_to_pix(self.W, self.H)
+
+        rect = shapes.Rectangle(x, y, w, h, color=(255, 22, 20), batch=batch)
+        rect.anchor_position = self.x, self.y
+        rect.rotation = self.theta
+        return rect
+
     def setWheelVel(self, W1, W2, W3, W4):
         self.W1 = W1
         self.W2 = W2
@@ -76,20 +95,47 @@ class Bot:
         self.x += dt*self.BotVel_global_coordinate[0][0]
         self.y += dt*self.BotVel_global_coordinate[1][0]
         self.theta += dt*self.BotVel_global_coordinate[2][0]
-    
-bot = Bot(botWidth, botHeight, botRadius, botMaxRotationalSpeed)
 
 # modifing the window
 
 class Simulator(Window):
     def __init__(self, *args, **kwarg):
         super().__init__(*args, **kwarg)
-        self.label = pyglet.text.Label('Hello, world!')
+
+        global windowWidth, windowHeight, roomWidth, roomHeight
+        
+        windowWidth = self.width
+        windowHeight = self.height
+
+        if windowWidth<windowHeight:
+            roomWidth=room
+            roomHeight=room*(windowHeight/windowWidth)
+        else:
+            roomHeight=room
+            roomWidth=room*(windowWidth/windowHeight)
+
+        self.bot = Bot(botWidth, botHeight, botRadius, botMaxRotationalSpeed)
+        self.bot.setWheelVel(10, 10, 10, 10)
+
+        pyglet.clock.schedule_interval(self.bot.update, 1/120.0)
+        self.batch = pyglet.graphics.Batch()
+
+
 
     def on_draw(self):
         self.clear()
-        self.label.draw()
+        rect = self.bot.draw(self.batch)
+        self.batch.draw()
+
+# Converts value from center coordinate frame to left bottom coordinate frame
+def toCenter(x, y):
+    x, y = room_to_pix(x, y)
+    return x+windowWidth/2, y+windowHeight/2
+
+def room_to_pix(width, height):
+    return windowWidth*width/roomWidth, windowHeight*height/roomHeight
 
 if __name__ == '__main__':
-    window = Simulator()
+    config = gl.Config(double_buffer=True)
+    window = Simulator(fullscreen=True, config=config)
     pyglet.app.run()
