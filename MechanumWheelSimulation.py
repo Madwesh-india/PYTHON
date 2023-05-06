@@ -51,8 +51,8 @@ class Bot:
 #         ])
         
         self.R = lambda theta: np.array([
-            [cos(theta), sin(theta), 0],
-            [-sin(theta), cos(theta), 0],
+            [np.cos(theta), np.sin(theta), 0],
+            [-np.sin(theta), np.cos(theta), 0],
             [0, 0, 1]
         ])
     
@@ -71,7 +71,7 @@ class Bot:
                                 ])
         
         self.BotVel_bot_coordinate = self.forwardKinamatics@wheelVel
-        self.BotVel_global_coordinate = self.R(self.theta)@self.BotVel_bot_coordinate
+        self.BotVel_global_coordinate = self.R(self.theta).T@self.BotVel_bot_coordinate
         
         self.x += dt*self.BotVel_global_coordinate[0][0]
         self.y += dt*self.BotVel_global_coordinate[1][0]
