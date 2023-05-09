@@ -136,18 +136,11 @@ class Bot:
         x, y = toCenter(self.x, self.y)
         w, h = room_to_pix(self.W, self.H)
 
-        x=x-w/2
-        y=y-h/2
-        print(x, y)
-        self.arr = Arrow(x, y, 0.2*w, 0.20*h, 0.5*w, 0.5*h, color=(100, 0, 0), batch=batch)
 
         self.rect = shapes.Rectangle(x, y, w, h, color=(255, 22, 20), batch=batch)
         self.rect.opacity = int(0.4*255)
+        self.arr = Arrow(x, y, 0.2*w, 0.20*h, 0.5*w, 0.5*h, color=(0, 100, 0), batch=batch)
 
-        x1 = x+h*np.cos(self.theta)
-        y1 = y+h*np.sin(self.theta)
-
-        self.line = shapes.Line(x, y, x1, y1, width=2, color=(0, 233, 230), batch=batch)
         self.rect.anchor_position = w/2, h/2
         #Clockwise rotation of the rectangle, in degrees since anticlockwise is positive in convenction so -ve sign to make it negative.
         self.rect.rotation = -np.rad2deg(self.theta)
@@ -157,19 +150,12 @@ class Bot:
         x, y = toCenter(self.x, self.y)
         w, h = room_to_pix(self.W, self.H)
 
-
-        x=x-w/2
-        y=y-h/2
-
         self.arr.x, self.arr.y = x, y
         self.rect.position = x, y
 
         x1 = x+h*np.cos(self.theta)
         y1 = y+h*np.sin(self.theta)
 
-        self.line.position = x, y
-        self.line.x2 = x1
-        self.line.y2 = y1
         self.rect.anchor_position = w/2, h/2
         #Clockwise rotation of the rectangle, in degrees since anticlockwise is positive in convenction so -ve sign to make it negative.
         self.rect.rotation = -np.rad2deg(self.theta)
